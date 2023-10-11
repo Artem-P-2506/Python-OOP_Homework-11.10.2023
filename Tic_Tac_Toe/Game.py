@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from Tic_Tac_Toe.Cross import *
 from Tic_Tac_Toe.Circle import *
 
@@ -19,6 +20,13 @@ class Game():
 
     def setSecondPlayerName(self, newName):
         self.__secondPlayerName = newName
+
+    def getLogsOfLastGame(self):
+        if os.path.exists("gameLOGS.txt"):
+            with open("gameLOGS.txt", 'r') as file:
+                return file.readlines()
+        else:
+            return []
 
     def __makeArray(self, rows, colums):
         for i in range(rows):
@@ -80,8 +88,9 @@ class Game():
         for i in range(FieldSize):
             isWin = True
             for j in range(FieldSize):
-                if self.__arrayTicTacToe[i][j] != symbol:
+                if self.__arrayTicTacToe[i][j].getValue() != symbol:
                     isWin = False
+                    break
             if isWin:
                 return True
 
@@ -89,34 +98,56 @@ class Game():
         for j in range(FieldSize):
             isWin = True
             for i in range(FieldSize):
-                if self.__arrayTicTacToe[i][j] != symbol:
+                if self.__arrayTicTacToe[i][j].getValue() != symbol:
                     isWin = False
+                    break
             if isWin:
                 return True
 
         # Проверка по главной диагонали
         isWin = True
         for i in range(FieldSize):
-            if self.__arrayTicTacToe[i][j] != symbol:
+            if self.__arrayTicTacToe[i][i].getValue() != symbol:
                 isWin = False
+                break
         if isWin:
             return True
 
         # Проверка по второй диагонали
         isWin = True
         for i in range(FieldSize):
-            if self.__arrayTicTacToe[j][FieldSize - 1 - i] != symbol:
+            if self.__arrayTicTacToe[i][FieldSize - 1 - i].getValue() != symbol:
                 isWin = False
+                break
         if isWin:
             return True
 
         return False
 
     def startGame(self):
+        while(True):
+            print("Посмотреть информацию про прошлую игру?")
+            showLogsLastGame = input("ДА - '+'  |  НЕТ - '-': ")
+            if showLogsLastGame == '+':
+                for item in self.getLogsOfLastGame():
+                    print(item, end="")
+                print("\n")
+                break
+            elif showLogsLastGame == '-':
+                break
+            else:
+                print("Wrong input!\n")
+                continue
+
+        print("Новая игра начата!")
+        startTime = datetime.now()
+        startTime.strftime("%Y-%m-%d %H:%M:%S")
         self.__firstPlayerName = input("Введите имя первого игрока (CROSS): ")
         self.__secondPlayerName = input("Введите имя второго игрока (CIRCLE): ")
         with open("gameLOGS.txt", 'w') as file:
-            file.write(f"First player name:\t{str(self.__firstPlayerName)}\nSecond player name:\t{str(self.__secondPlayerName)}")
+            file.write(f"Game start time:\t{startTime}" +
+                       f"\nFirst player name:\t{str(self.__firstPlayerName)}" +
+                       f"\nSecond player name:\t{str(self.__secondPlayerName)}")
 
         print("3*3 - 1  |  6*6 - 2  |  9*9 - 3")
         choise = int(input("Выберите поле: "))
@@ -131,7 +162,6 @@ class Game():
             colums = 9
         else:
             print("Wrong input!")
-
         with open("gameLOGS.txt", 'a') as file:
             file.write(f"\nField size (rows*columns):\t{rows}*{colums}\n")
         self.__makeArray(rows, colums)
@@ -141,11 +171,17 @@ class Game():
             # Ходит первый игрок
             self.__changeCell(self.__firstPlayerName)
             self.__showField()
-            if self.__isWin():
-                print("Wictory!")
+            if self.__isWin(self.__firstPlayerName):
+                print(f"=-=-=* Игрок '{self.__firstPlayerName}' победил!!! *=-=-=")
+                with open("gameLOGS.txt", 'a') as file:
+                    file.write(f"\nWon player:\t'{self.__firstPlayerName}'")
+                break
 
             # Ходит второй игрок
             self.__changeCell(self.__secondPlayerName)
             self.__showField()
-            if self.__isWin():
-                print("Wictory!")
+            if self.__isWin(self.__secondPlayerName):
+                print(f"=-=-=* Игрок '{self.__secondPlayerName}' победил!!! *=-=-=")
+                with open("gameLOGS.txt", 'a') as file:
+                    file.write(f"\nWon player:\t'{self.__firstPlayerName}'")
+                break
